@@ -98,25 +98,19 @@ if __name__ == "__main__":
     dataset = np.delete(dataset,-1,axis = 1)
 
 
-    dataset, labels = remove_outliers(dataset,labels)
+    #dataset, labels = remove_outliers(dataset,labels)
 
-    # USE THIS FOR STELIOS NORMALIZE METHOD
-    for i in range(dataset.shape[1]):
-        dataset[:,i] = normalize(dataset[:,i],np.max(dataset[:,i]))
-        # plt.plot(dataset[:,i])
-        # plt.show()
+    # # USE THIS FOR STELIOS NORMALIZE METHOD
+    # for i in range(dataset.shape[1]):
+    #     dataset[:,i] = normalize(dataset[:,i],np.max(dataset[:,i]))
+    #     # plt.plot(dataset[:,i])
+    #     # plt.show()
 
     dataset, labels = remove_fly_data(dataset, labels)
-    dataset = remove_features([0,1,3,4,5],dataset)
+    #dataset = remove_features([0,1,3,4,5],dataset)
     dataset[:,0:1] = add_noise(dataset[:,0:1],0.6325)       # Fz
     dataset[:,1:4] = add_noise(dataset[:,1:4],0.0078)       # ax ay az
     dataset[:,4:7] = add_noise(dataset[:,4:7],0.00523)      # wx wy wz
-
- 
-
-
-
-
 
 
     X_train, X_test, y_train, y_test = train_test_split(dataset, labels, test_size=0.2, random_state=43)
@@ -125,8 +119,10 @@ if __name__ == "__main__":
     X_test  = X_test.reshape(X_test.shape[0],X_test.shape[1],1)
 
     contact = lcd()
-    humanoid = False
+    humanoid = True
     robot = "ATLAS"
+
+
     contact.setConfiguration(robot, humanoid)
     contact.fit(X_train, y_train,  30 ,16, True)
 
@@ -154,17 +150,17 @@ if __name__ == "__main__":
       unseen = read_dataset(filename)
       unseenlabels = unseen[:,-1]
       unseen = np.delete(unseen,-1,axis = 1)
-      unseen, unseenlabels = remove_outliers(unseen,unseenlabels)
+     # unseen, unseenlabels = remove_outliers(unseen,unseenlabels)
       # USE THIS FOR STELIOS NORMALIZE METHOD
-      for i in range(unseen.shape[1]):
-          unseen[:,i] = normalize(unseen[:,i],np.max(unseen[:,i]))
-          # plt.plot(dataset[:,i])
-          # plt.show()
+    #   for i in range(unseen.shape[1]):
+    #       unseen[:,i] = normalize(unseen[:,i],np.max(unseen[:,i]))
+    #       # plt.plot(dataset[:,i])
+    #       # plt.show()
       
       # Remove FLY data points
       unseen, unseenlabels = remove_fly_data(unseen, unseenlabels)
 
-      unseen = remove_features([0,1,3,4,5],unseen)
+      #unseen = remove_features([0,1,3,4,5],unseen)
 
       unseen[:,0:1] = add_noise(unseen[:,0:1],0.6325)      # Fz
       unseen[:,1:4] = add_noise(unseen[:,1:4],0.0078)       # ax ay az
