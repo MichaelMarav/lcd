@@ -23,15 +23,16 @@ def read_dataset(filename):
   return dataset
 
 
-def remove_fly_data(data):
+def remove_fly_data(dataset,labels):
   indx2remove = []
-  for i in range(0,data.shape[0]):
-    if data[i,-1] == 1:
+  for i in range(0,labels.shape[0]):
+    if labels[i] == 1:
       indx2remove.append(i)
-    if data[i,-1] == 2:
-      data[i,-1] = 1
-  data = np.delete(data,indx2remove,axis = 0)
-  return data
+    if labels[i] == 2:
+      labels[i] = 1
+  dataset = np.delete(dataset,indx2remove,axis = 0)
+  labels = np.delete(labels,indx2remove,axis = 0)
+  return dataset, labels
 
 def add_noise(data,std):
   mu = 0  # mean and standard deviation
@@ -43,104 +44,80 @@ def add_noise(data,std):
 
 
 # Normalize stelios
-# def normalize(din, dmax):
-#     if(dmax != 0):
-#         dout =  np.abs(din/dmax)
-#     else:
-#         dout =  np.zeros((np.size(din)))
-#     return dout
-
-
-
-# Use this before split data and labels
-def normalize(data):
-  result = deepcopy(data)
-  result = abs(result)
-  maxes = []
-  for f in range(data.shape[1]-1):
-    maxes.append(np.max(result[:,f]))
-
-  for f in range(data.shape[1]-1):
-    # max_f = np.max(data[:,f])
-    for i in range(data.shape[0]):
-      data[i,f] = data[i,f]/maxes[f]
-
-  return data
-
-
-def standard(data):
-  for f in range(data.shape[1]-1):
-    mean_f = np.mean(data[:,f])
-    std_f  = np.std(data[:,f])
-    for i in range(data.shape[0]):
-      data[i,f] = (data[i,f]-mean_f)/std_f
-  return data
+def normalize(din, dmax):
+    if(dmax != 0):
+        dout =  np.abs(din/dmax)
+    else:
+        dout =  np.zeros((np.size(din)))
+    return dout
 
 def remove_features(features_to_remove,dataset):
   dataset = np.delete(dataset,features_to_remove,axis=1)
   return dataset
 
 
-def z_score_outlier_detection(data,threshold):
-  samples_to_remove = []
-  mean_f = [0]
-  std_f  = [0]
-  for f in range(1,data.shape[1]-1):
-    mean_f.append(np.mean(data[:,f]))
-    std_f.append(np.std(data[:,f]))
+def remove_outliers(dataset,labels):
+  # Outlier removal. (due to fall data spikes)
+  feature_mean = []  # contains the mean value for every feature
+  feature_std  = []  # contains the standard deviation of every feature
 
-  for i in range(data.shape[0]):
-    for f in range(1,data.shape[1]-1):
-      z = abs(mean_f[f] - dataset[i,f])/std_f[f]
-      if z > threshold:
-        samples_to_remove.append(i)
-        break
+  for i in range(dataset.shape[1]):
+    feature_mean.append(np.mean(dataset[:,i]))
+    feature_std.append(np.std(dataset[:,i]))
 
-  print("REMOVED SAMPLES : ",len(samples_to_remove))
+  # identify outliers
+  cut_off     = []
+  lower_bound = []
+  upper_bound = []
+  num_std = 3       # how many sigmas
 
-  data = np.delete(data,samples_to_remove,axis = 0)
+  for i in range(dataset.shape[1]):
+    cut_off.append(feature_std[i]*num_std)
+    lower_bound.append(feature_mean[i]-cut_off[i])
+    upper_bound.append(feature_mean[i]+cut_off[i])
 
-  return data
+  outliers = []    # stores the indexes where the outliers are
+  for i in range(dataset.shape[0]):
+    for j in range(dataset.shape[1]):
+        if (dataset[i,j] <= lower_bound[j]) or (dataset[i,j] >= upper_bound[j]):
+          outliers.append(i) 
+          continue
+  before_del = dataset.shape[0]
+  # Delete the outliers from dataset
+  dataset = np.delete(dataset,outliers,axis=0)
 
-# remove outliers based on the mass of the robot
+  labels  = np.delete(labels,outliers,axis=0)
 
-def remove_outliers(data,mass,pc_cut):
-    g = 9.81
-    samples_to_remove = []
-    for i in range(data.shape[0]):
-        if data[i,0] > mass*g*(1+pc_cut):  # remove all data that are greater that (100%+oc_cut%) of mg
-            samples_to_remove.append(i)
-
-    data = np.delete(data,samples_to_remove,axis=0)
-    return data
+  print( "Removed -> ",  before_del- dataset.shape[0], " data samples out of ", before_del)
+  return dataset,labels
 
 
 if __name__ == "__main__":
     dataset = read_dataset('ATLAS_21k_02ground_coul_vel.csv')
+    labels  = dataset[:,-1]         # delete labels
+    dataset = np.delete(dataset,-1,axis = 1)
 
-    dataset = remove_fly_data(dataset)
 
+    dataset, labels = remove_outliers(dataset,labels)
+
+    # USE THIS FOR STELIOS NORMALIZE METHOD
+    for i in range(dataset.shape[1]):
+        dataset[:,i] = normalize(dataset[:,i],np.max(dataset[:,i]))
+        # plt.plot(dataset[:,i])
+        # plt.show()
+
+    dataset, labels = remove_fly_data(dataset, labels)
     dataset = remove_features([0,1,3,4,5],dataset)
-
     dataset[:,0:1] = add_noise(dataset[:,0:1],0.6325)       # Fz
     dataset[:,1:4] = add_noise(dataset[:,1:4],0.0078)       # ax ay az
     dataset[:,4:7] = add_noise(dataset[:,4:7],0.00523)      # wx wy wz
 
-    # dataset = remove_outliers(dataset,174.25,0.1) # Dataset, mass , % you want to cutoff Fz
-
-    # dataset = z_score_outlier_detection(dataset,2.) # Z-score outlier removal
-
-    # dataset = normalize(dataset)  # Normalize dataset (MIXALIS METHOD)
-
-    # dataset = standard(dataset)   # standarize dataset
+ 
 
 
-    # USE THIS FOR STELIOS NORMALIZE METHOD
-    # for i in range(dataset.shape[1]):
-    #     dataset[:,i] = normalize(dataset[:,i],np.max(dataset[:,i]))
 
-    labels  = dataset[:,-1]         # delete labels
-    dataset = np.delete(dataset,-1,axis = 1)
+
+
 
     X_train, X_test, y_train, y_test = train_test_split(dataset, labels, test_size=0.2, random_state=43)
     y_train = to_categorical(y_train,num_classes=2)
@@ -151,7 +128,7 @@ if __name__ == "__main__":
     humanoid = False
     robot = "ATLAS"
     contact.setConfiguration(robot, humanoid)
-    contact.fit(X_train, y_train,  15 ,16, True)
+    contact.fit(X_train, y_train,  30 ,16, True)
 
 
 
@@ -175,9 +152,17 @@ if __name__ == "__main__":
         mass = 5.19535
 
       unseen = read_dataset(filename)
-
+      unseenlabels = unseen[:,-1]
+      unseen = np.delete(unseen,-1,axis = 1)
+      unseen, unseenlabels = remove_outliers(unseen,unseenlabels)
+      # USE THIS FOR STELIOS NORMALIZE METHOD
+      for i in range(unseen.shape[1]):
+          unseen[:,i] = normalize(unseen[:,i],np.max(unseen[:,i]))
+          # plt.plot(dataset[:,i])
+          # plt.show()
+      
       # Remove FLY data points
-      unseen = remove_fly_data(unseen)
+      unseen, unseenlabels = remove_fly_data(unseen, unseenlabels)
 
       unseen = remove_features([0,1,3,4,5],unseen)
 
@@ -185,22 +170,12 @@ if __name__ == "__main__":
       unseen[:,1:4] = add_noise(unseen[:,1:4],0.0078)       # ax ay az
       unseen[:,4:7] = add_noise(unseen[:,4:7],0.00523)      # wx wy wz
 
-      # unseen = z_score_outlier_detection(unseen,5)
-      # unseen = remove_outliers(unseen,mass,0.1)
 
-      # # unseen = standard(unseen)
-      # unseen = z_score_outlier_detection(unseen,2.)
-
-      # unseen = normalize(unseen)
-      # unseen = standard(unseen)
-
-      unseen_labels  = unseen[:,-1]
-      unseen = np.delete(unseen,-1,axis = 1)
       unseen = unseen.reshape(unseen.shape[0],unseen.shape[1],1)
 
       predict_x1 = contact.predict_dataset(unseen)
       classes_x1 = np.argmax(predict_x1,axis=1)
-      conf1 = confusion_matrix(unseen_labels,classes_x1)
+      conf1 = confusion_matrix(unseenlabels,classes_x1)
       print(conf1)
       print("Stable accuracy = ", conf1[0,0]*100/(conf1[0,0]+conf1[0,1]))
       print("Slip  accuracy = ", conf1[1,1]*100/(conf1[1,0]+conf1[1,1]))
