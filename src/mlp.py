@@ -72,9 +72,9 @@ class mlp():
 
 
     def setArchitecture(self, input_dim):
-        self.model = keras.Sequential()
+        self.model = Sequential()
         # Input
-        self.model.add(Dense(320, activation='relu',input_shape=(input_dim, )))
+        self.model.add(Dense(320, activation='relu',input_shape=(input_dim,1)))
         # First hidden
         self.model.add(Dense(272, activation='relu'))
         # Dropout
@@ -90,5 +90,5 @@ class mlp():
         self.init = True
 
 
-    def fit(self, x_train, y_train, x_validation, y_validation, epochs_, batch_size_):
-        self.model_log = self.model.fit(x_train, ytrain, validation_data=(x_validation,  y_validation), epochs=epochs_, batch_size=batch_size_,  verbose=1, shuffle=True)
+    def fit(self, x_train, y_train,  epochs_, batch_size_):
+        self.model_log = self.model.fit(x_train, y_train,validation_split = 0.2, epochs=epochs_, batch_size=batch_size_,  verbose=1, shuffle=True)
