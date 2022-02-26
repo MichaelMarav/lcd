@@ -14,7 +14,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the Foundation for Research and Technology Hellas (FORTH) 
+ *     * Neither the name of the Foundation for Research and Technology Hellas (FORTH)
  *	 nor the names of its contributors may be used to endorse or promote products derived from
  *       this software without specific prior written permission.
  *
@@ -72,20 +72,37 @@ class mlp():
 
 
     def setArchitecture(self, input_dim):
+        # self.model = Sequential()
+        # # Input
+        # self.model.add(Dense(320, activation='relu',input_shape=(input_dim,1)))
+        # # First hidden
+        # self.model.add(Dense(272, activation='relu'))
+        # # Dropout
+        # self.model.add(Dropout(0.3))
+        # # Second hidden
+        # self.model.add(Dense(160, activation='relu'))
+        # # Max pooling
+        # self.model.add(MaxPooling1D(pool_size=2, name="MaxPooling1D"))
+        # self.model.add(Flatten())
+        # self.model.add(Dense(304, activation='relu'))
+        # self.model.add(Dense(2, activation='softmax'))
+        # self.model.compile(optimizer='adam',loss='categorical_crossentropy', metrics=['accuracy'])
+        # self.init = True
+
         self.model = Sequential()
         # Input
-        self.model.add(Dense(320, activation='relu',input_shape=(input_dim,1)))
+        self.model.add(Dense(32, activation='relu',use_bias = True,input_shape=(input_dim,1)))
         # First hidden
-        self.model.add(Dense(272, activation='relu'))
+        self.model.add(Dense(32, activation='relu'))
         # Dropout
         self.model.add(Dropout(0.3))
         # Second hidden
-        self.model.add(Dense(160, activation='relu'))
+        self.model.add(Dense(16, activation='relu'))
         # Max pooling
         self.model.add(MaxPooling1D(pool_size=2, name="MaxPooling1D"))
         self.model.add(Flatten())
-        self.model.add(Dense(304, activation='relu'))
-        self.model.add(Dense(2, activation='softmax'))
+        self.model.add(Dense(100, activation='relu'))
+        self.model.add(Dense(3, activation='softmax'))
         self.model.compile(optimizer='adam',loss='categorical_crossentropy', metrics=['accuracy'])
         self.init = True
 

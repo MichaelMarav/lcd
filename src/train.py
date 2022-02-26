@@ -80,7 +80,7 @@ def remove_outliers(dataset,labels):
   for i in range(dataset.shape[0]):
     for j in range(dataset.shape[1]):
         if (dataset[i,j] <= lower_bound[j]) or (dataset[i,j] >= upper_bound[j]):
-          outliers.append(i) 
+          outliers.append(i)
           continue
   before_del = dataset.shape[0]
   # Delete the outliers from dataset
@@ -106,15 +106,26 @@ if __name__ == "__main__":
     #     # plt.plot(dataset[:,i])
     #     # plt.show()
 
-    dataset, labels = remove_fly_data(dataset, labels)
+    # dataset, labels = remove_fly_data(dataset, labels)
+
+    # add noise to everything
+    dataset[:,:3]  = add_noise(dataset[:,:3],0.6325)       # Fx Fy Fz
+    dataset[:,3:6] = add_noise(dataset[:,3:6],0.03)    # Tx Ty Tz
+    dataset[:,6:9] = add_noise(dataset[:,6:9],0.0078)    # ax ay az
+    dataset[:,9:12] = add_noise(dataset[:,9:12],0.00523)  # wx wy wz
+
+
+    for i in range(dataset.shape[1]):
+        dataset[:,i] = normalize(dataset[:,i],np.max(dataset[:,i]))
+
     #dataset = remove_features([0,1,3,4,5],dataset)
-    dataset[:,0:1] = add_noise(dataset[:,0:1],0.6325)       # Fz
-    dataset[:,1:4] = add_noise(dataset[:,1:4],0.0078)       # ax ay az
-    dataset[:,4:7] = add_noise(dataset[:,4:7],0.00523)      # wx wy wz
+    # dataset[:,0:1] = add_noise(dataset[:,0:1],0.6325)       # Fz
+    # dataset[:,1:4] = add_noise(dataset[:,1:4],0.0078)       # ax ay az
+    # dataset[:,4:7] = add_noise(dataset[:,4:7],0.00523)      # wx wy wz
 
 
     X_train, X_test, y_train, y_test = train_test_split(dataset, labels, test_size=0.2, random_state=43)
-    y_train = to_categorical(y_train,num_classes=2)
+    y_train = to_categorical(y_train,num_classes=3)
     X_train = X_train.reshape(X_train.shape[0],X_train.shape[1],1)
     X_test  = X_test.reshape(X_test.shape[0],X_test.shape[1],1)
 
@@ -156,15 +167,24 @@ if __name__ == "__main__":
     #       unseen[:,i] = normalize(unseen[:,i],np.max(unseen[:,i]))
     #       # plt.plot(dataset[:,i])
     #       # plt.show()
-      
+
+
+      unseen[:,:3]   = add_noise(unseen[:,:3],0.6325)
+      unseen[:,3:6]  = add_noise(unseen[:,3:6],0.0316)
+      unseen[:,6:9]  = add_noise(unseen[:,6:9],0.0078)
+      unseen[:,9:12] = add_noise(unseen[:,9:12],0.00523)
+
+
+      for i in range(dataset.shape[1]):
+          unseen[:,i] = normalize(unseen[:,i],np.max(unseen[:,i]))
       # Remove FLY data points
-      unseen, unseenlabels = remove_fly_data(unseen, unseenlabels)
+      # unseen, unseenlabels = remove_fly_data(unseen, unseenlabels)
 
       #unseen = remove_features([0,1,3,4,5],unseen)
 
-      unseen[:,0:1] = add_noise(unseen[:,0:1],0.6325)      # Fz
-      unseen[:,1:4] = add_noise(unseen[:,1:4],0.0078)       # ax ay az
-      unseen[:,4:7] = add_noise(unseen[:,4:7],0.00523)      # wx wy wz
+      # unseen[:,0:1] = add_noise(unseen[:,0:1],0.6325)      # Fz
+      # unseen[:,1:4] = add_noise(unseen[:,1:4],0.0078)       # ax ay az
+      # unseen[:,4:7] = add_noise(unseen[:,4:7],0.00523)      # wx wy wz
 
 
       unseen = unseen.reshape(unseen.shape[0],unseen.shape[1],1)
@@ -172,6 +192,14 @@ if __name__ == "__main__":
       predict_x1 = contact.predict_dataset(unseen)
       classes_x1 = np.argmax(predict_x1,axis=1)
       conf1 = confusion_matrix(unseenlabels,classes_x1)
+
+      # for 2 classes
+      # print(conf1)
+      # print("Stable accuracy = ", conf1[0,0]*100/(conf1[0,0]+conf1[0,1]))
+      # print("Slip  accuracy = ", conf1[1,1]*100/(conf1[1,0]+conf1[1,1]))
+
+      # for 3 classes
       print(conf1)
-      print("Stable accuracy = ", conf1[0,0]*100/(conf1[0,0]+conf1[0,1]))
-      print("Slip  accuracy = ", conf1[1,1]*100/(conf1[1,0]+conf1[1,1]))
+      print("Stable accuracy = ", conf1[0,0]*100/(conf1[0,0]+conf1[0,1]+conf1[0,2]))
+      print("Fly accuracy    = ", conf1[1,1]*100/(conf1[1,0]+conf1[1,1]+conf1[1,2]))
+      print("Slip  accuracy  = ", conf1[2,2]*100/(conf1[2,0]+conf1[2,1]+conf1[2,2]))
