@@ -72,22 +72,6 @@ class mlp():
 
 
     def setArchitecture(self, input_dim):
-        # self.model = Sequential()
-        # # Input
-        # self.model.add(Dense(320, activation='relu',input_shape=(input_dim,1)))
-        # # First hidden
-        # self.model.add(Dense(272, activation='relu'))
-        # # Dropout
-        # self.model.add(Dropout(0.3))
-        # # Second hidden
-        # self.model.add(Dense(160, activation='relu'))
-        # # Max pooling
-        # self.model.add(MaxPooling1D(pool_size=2, name="MaxPooling1D"))
-        # self.model.add(Flatten())
-        # self.model.add(Dense(304, activation='relu'))
-        # self.model.add(Dense(2, activation='softmax'))
-        # self.model.compile(optimizer='adam',loss='categorical_crossentropy', metrics=['accuracy'])
-        # self.init = True
 
         self.model = Sequential()
         # Input
@@ -102,7 +86,7 @@ class mlp():
         self.model.add(MaxPooling1D(pool_size=2, name="MaxPooling1D"))
         self.model.add(Flatten())
         self.model.add(Dense(128, activation='relu'))
-        self.model.add(Dense(2, activation='softmax'))
+        self.model.add(Dense(2, activation='sigmoid'))
         self.model.compile(optimizer='adam',loss='binary_crossentropy', metrics=['accuracy'])
         self.init = True
 

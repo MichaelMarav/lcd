@@ -218,6 +218,8 @@ if __name__ == "__main__":
       print("Stable accuracy = ", conf1[0,0]*100/(conf1[0,0]+conf1[0,1]))
       print("Slip  accuracy = ", conf1[1,1]*100/(conf1[1,0]+conf1[1,1]))
 
+      # Save predictions
+      # np.savetxt('/home/michael/Desktop/comparison/predictions/' + filename,predict_x1,delimiter =',')
       # for 3 classes
       # print(conf1)
       # print("Stable accuracy = ", conf1[0,0]*100/(conf1[0,0]+conf1[0,1]+conf1[0,2]))
