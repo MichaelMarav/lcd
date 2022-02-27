@@ -102,7 +102,7 @@ class mlp():
         self.model.add(MaxPooling1D(pool_size=2, name="MaxPooling1D"))
         self.model.add(Flatten())
         self.model.add(Dense(100, activation='relu'))
-        self.model.add(Dense(3, activation='softmax'))
+        self.model.add(Dense(2, activation='softmax'))
         self.model.compile(optimizer='adam',loss='categorical_crossentropy', metrics=['accuracy'])
         self.init = True
 
