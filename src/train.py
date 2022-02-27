@@ -105,8 +105,6 @@ if __name__ == "__main__":
     dataset, labels = remove_outliers(dataset,labels)
 
     # Normalize dataset
-    for i in range(dataset.shape[1]):
-        dataset[:,i] = normalize(dataset[:,i],np.max(dataset[:,i]))
 
 
     labels = merge_slip_with_fly(labels)
@@ -126,6 +124,9 @@ if __name__ == "__main__":
     dataset[:,3:6] = add_noise(dataset[:,3:6],0.03)    # Tx Ty Tz
     dataset[:,6:9] = add_noise(dataset[:,6:9],0.0078)    # ax ay az
     dataset[:,9:12] = add_noise(dataset[:,9:12],0.00523)  # wx wy wz
+
+    for i in range(dataset.shape[1]):
+        dataset[:,i] = normalize(dataset[:,i],np.max(dataset[:,i]))
 
     # # Normalize dataset
     # for i in range(dataset.shape[1]):
@@ -162,7 +163,7 @@ if __name__ == "__main__":
     print("Slip  accuracy = ", conf[1,1]*100/(conf[1,0]+conf[1,1]))
 
     # TEST FILANAMES
-    test_datasets_filenames = ['ATLAS_7k_04ground_coul_vel.csv','ATLAS_10k_05ground_coul_vel.csv','NAO_FIXED_05.csv','NAO_13k_mixedFriction.csv']#'NAO_4k_01ground_coul_vel.csv','NAO_5k_03ground_coul_vel.csv','NAO_7k_05ground_coul_vel.csv']
+    test_datasets_filenames = ['ATLAS_7k_04ground_coul_vel.csv','ATLAS_10k_05ground_coul_vel.csv','ATLAS_50k_05ground005road.csv','NAO_FIXED_05.csv','NAO_13k_mixedFriction.csv']#'NAO_4k_01ground_coul_vel.csv','NAO_5k_03ground_coul_vel.csv','NAO_7k_05ground_coul_vel.csv']
 
 
     for filename in test_datasets_filenames:
@@ -179,8 +180,7 @@ if __name__ == "__main__":
 
       unseen, unseenlabels = remove_outliers(unseen,unseenlabels)
       # USE THIS FOR STELIOS NORMALIZE METHOD
-      for i in range(unseen.shape[1]):
-          unseen[:,i] = normalize(unseen[:,i],np.max(unseen[:,i]))
+
 
 
       unseenlabels = merge_slip_with_fly(unseenlabels)
@@ -192,6 +192,8 @@ if __name__ == "__main__":
       unseen[:,9:12] = add_noise(unseen[:,9:12],0.00523)
 
 
+      for i in range(unseen.shape[1]):
+          unseen[:,i] = normalize(unseen[:,i],np.max(unseen[:,i]))
       # for i in range(dataset.shape[1]):
       #     unseen[:,i] = normalize(unseen[:,i],np.max(unseen[:,i]))
       # Remove FLY data points
