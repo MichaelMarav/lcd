@@ -98,7 +98,7 @@ def merge_slip_with_fly(ls):
     return ls
 
 if __name__ == "__main__":
-    dataset = read_dataset('ATLAS_21k_02ground_coul_vel.csv')
+    dataset = read_dataset('ATLAS_21k_02ground.csv')
     labels  = dataset[:,-1]         # delete labels
     dataset = np.delete(dataset,-1,axis = 1)
 
@@ -163,7 +163,7 @@ if __name__ == "__main__":
     print("Slip  accuracy = ", conf[1,1]*100/(conf[1,0]+conf[1,1]))
 
     # TEST FILANAMES
-    test_datasets_filenames = ['ATLAS_7k_04ground_coul_vel.csv','ATLAS_10k_05ground_coul_vel.csv','ATLAS_50k_05ground005road.csv','NAO_FIXED_05.csv','NAO_13k_mixedFriction.csv']#'NAO_4k_01ground_coul_vel.csv','NAO_5k_03ground_coul_vel.csv','NAO_7k_05ground_coul_vel.csv']
+    test_datasets_filenames = ['ATLAS_7k_04ground.csv','NAO_05ground.csv','ATLAS_10k_05ground.csv','ATLAS_50k_mixedFriction.csv','TALOS_50k_mixedFriction.csv','NAO_13k_mixedFriction.csv']#'NAO_4k_01ground_coul_vel.csv','NAO_5k_03ground_coul_vel.csv','NAO_7k_05ground_coul_vel.csv']
 
 
     for filename in test_datasets_filenames:
@@ -178,7 +178,7 @@ if __name__ == "__main__":
 
 
 
-      unseen, unseenlabels = remove_outliers(unseen,unseenlabels)
+      # unseen, unseenlabels = remove_outliers(unseen,unseenlabels)
       # USE THIS FOR STELIOS NORMALIZE METHOD
 
 
