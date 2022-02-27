@@ -91,19 +91,19 @@ class mlp():
 
         self.model = Sequential()
         # Input
-        self.model.add(Dense(32, activation='relu',use_bias = True,input_shape=(input_dim,1)))
+        self.model.add(Dense(128, activation='relu',use_bias = True,input_shape=(input_dim,1)))
         # First hidden
-        self.model.add(Dense(32, activation='relu'))
+        self.model.add(Dense(128, activation='relu'))
         # Dropout
         self.model.add(Dropout(0.3))
         # Second hidden
-        self.model.add(Dense(16, activation='relu'))
+        self.model.add(Dense(64, activation='relu'))
         # Max pooling
         self.model.add(MaxPooling1D(pool_size=2, name="MaxPooling1D"))
         self.model.add(Flatten())
-        self.model.add(Dense(100, activation='relu'))
+        self.model.add(Dense(128, activation='relu'))
         self.model.add(Dense(2, activation='softmax'))
-        self.model.compile(optimizer='adam',loss='categorical_crossentropy', metrics=['accuracy'])
+        self.model.compile(optimizer='adam',loss='binary_crossentropy', metrics=['accuracy'])
         self.init = True
 
 

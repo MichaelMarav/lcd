@@ -102,7 +102,7 @@ if __name__ == "__main__":
     labels  = dataset[:,-1]         # delete labels
     dataset = np.delete(dataset,-1,axis = 1)
 
-    dataset, labels = remove_outliers(dataset,labels)
+    # dataset, labels = remove_outliers(dataset,labels)
 
     # Normalize dataset
 
