@@ -16,24 +16,10 @@ def read_dataset(filename):
   dataset = df.values
   dataset = dataset.astype('float32')
 
-  # print("Total data -> ", dataset.shape[0])
-  # print("Slip data -> ",np.count_nonzero(dataset[:,-1]==2))
-  # print("Stable data -> ",np.count_nonzero(dataset[:,-1]==0))
-
   return dataset
 
 
-def remove_fly_data(dataset,labels):
-  indx2remove = []
-  for i in range(0,labels.shape[0]):
-    if labels[i] == 1:
-      indx2remove.append(i)
-    if labels[i] == 2:
-      labels[i] = 1
-  dataset = np.delete(dataset,indx2remove,axis = 0)
-  labels = np.delete(labels,indx2remove,axis = 0)
-  return dataset, labels
-
+# Adds gaussian noise to data
 def add_noise(data,std):
   mu = 0  # mean and standard deviation
   s = np.random.normal(mu, std, data.shape[0])
@@ -51,6 +37,7 @@ def normalize(din, dmax):
         dout =  np.zeros((np.size(din)))
     return dout
 
+# Removes list of features ( for point feet robots)
 def remove_features(features_to_remove,dataset):
   dataset = np.delete(dataset,features_to_remove,axis=1)
   return dataset
@@ -91,51 +78,47 @@ def remove_outliers(dataset,labels):
   print( "Removed -> ",  before_del- dataset.shape[0], " data samples out of ", before_del)
   return dataset,labels
 
+
+# Merges no_contact and slip labels -> UNSTABLE contact
 def merge_slip_with_fly(ls):
     for i in range(ls.shape[0]):
         if ls[i] == 2:
             ls[i] = 1
     return ls
 
+humanoid = True
+robot = "ATLAS"
+
+
 if __name__ == "__main__":
     dataset = read_dataset('ATLAS_21k_02ground.csv')
     labels  = dataset[:,-1]         # delete labels
     dataset = np.delete(dataset,-1,axis = 1)
 
-    # dataset, labels = remove_outliers(dataset,labels)
+    dataset, labels = remove_outliers(dataset,labels)
 
-    # Normalize dataset
+    labels = merge_slip_with_fly(labels) # Merge slip labels with no_contact labels = Unstable contact
+
+    dataset, labels = remove_outliers(dataset,labels)
+
+    if humanoid:
+        # add gaussian noise
+        dataset[:,:3]  = add_noise(dataset[:,:3],0.6325)       # Fx Fy Fz
+        dataset[:,3:6] = add_noise(dataset[:,3:6],0.03)        # Tx Ty Tz
+        dataset[:,6:9] = add_noise(dataset[:,6:9],0.0078)      # ax ay az
+        dataset[:,9:12] = add_noise(dataset[:,9:12],0.00523)   # wx wy wz
+    else:
+        # Remove features and add noise in case of point-feet robot
+        dataset = remove_features([0,1,3,4,5],dataset)
+        dataset[:,0:1] = add_noise(dataset[:,0:1],0.6325)       # Fz
+        dataset[:,1:4] = add_noise(dataset[:,1:4],0.0078)       # ax ay az
+        dataset[:,4:7] = add_noise(dataset[:,4:7],0.00523)      # wx wy wz
 
 
-    labels = merge_slip_with_fly(labels)
-
-    #dataset, labels = remove_outliers(dataset,labels)
-
-    # # USE THIS FOR STELIOS NORMALIZE METHOD
-    # for i in range(dataset.shape[1]):
-    #     dataset[:,i] = normalize(dataset[:,i],np.max(dataset[:,i]))
-    #     # plt.plot(dataset[:,i])
-    #     # plt.show()
-
-    # dataset, labels = remove_fly_data(dataset, labels)
-
-    # add noise to everything
-    dataset[:,:3]  = add_noise(dataset[:,:3],0.6325)       # Fx Fy Fz
-    dataset[:,3:6] = add_noise(dataset[:,3:6],0.03)    # Tx Ty Tz
-    dataset[:,6:9] = add_noise(dataset[:,6:9],0.0078)    # ax ay az
-    dataset[:,9:12] = add_noise(dataset[:,9:12],0.00523)  # wx wy wz
-
+    #  Normalize
     for i in range(dataset.shape[1]):
-        dataset[:,i] = normalize(dataset[:,i],np.max(dataset[:,i]))
+        dataset[:,i] = normalize(dataset[:,i],np.max(abs(dataset[:,i])))
 
-    # # Normalize dataset
-    # for i in range(dataset.shape[1]):
-    #     dataset[:,i] = normalize(dataset[:,i],np.max(dataset[:,i]))
-
-    # dataset = remove_features([0,1,3,4,5],dataset)
-    # dataset[:,0:1] = add_noise(dataset[:,0:1],0.6325)       # Fz
-    # dataset[:,1:4] = add_noise(dataset[:,1:4],0.0078)       # ax ay az
-    # dataset[:,4:7] = add_noise(dataset[:,4:7],0.00523)      # wx wy wz
 
 
     X_train, X_test, y_train, y_test = train_test_split(dataset, labels, test_size=0.2, random_state=43)
@@ -144,67 +127,55 @@ if __name__ == "__main__":
     X_test  = X_test.reshape(X_test.shape[0],X_test.shape[1],1)
 
     contact = lcd()
-    humanoid = True
-    robot = "ATLAS"
-
 
     contact.setConfiguration(robot, humanoid)
-    contact.fit(X_train, y_train,  15 ,16, True)
-
-
+    contact.fit(X_train, y_train,  15 ,16, True) # Train for 15 epochs
 
 
     # PREDICTIONS
-    predict_x = contact.predict_dataset(X_test) # 20% of the training data
+    predict_x = contact.predict_dataset(X_test) # 20% of the training dataset
     classes_x = np.argmax(predict_x,axis=1)
     conf = confusion_matrix(y_test,classes_x)
+
     print(conf)
     print("Stable accuracy = ", conf[0,0]*100/(conf[0,0]+conf[0,1]))
     print("Slip  accuracy = ", conf[1,1]*100/(conf[1,0]+conf[1,1]))
 
     # TEST FILANAMES
-    test_datasets_filenames = ['ATLAS_7k_04ground.csv','NAO_05ground.csv','ATLAS_10k_05ground.csv','ATLAS_50k_mixedFriction.csv','TALOS_50k_mixedFriction.csv','NAO_13k_mixedFriction.csv']#'NAO_4k_01ground_coul_vel.csv','NAO_5k_03ground_coul_vel.csv','NAO_7k_05ground_coul_vel.csv']
-
+    test_datasets_filenames = ['ATLAS_7k_04ground.csv','ATLAS_10k_05ground.csv','ATLAS_50k_mixedFriction.csv','NAO_13k_mixedFriction.csv','TALOS_50k_mixedFriction.csv']#'NAO_4k_01ground_coul_vel.csv','NAO_5k_03ground_coul_vel.csv','NAO_7k_05ground_coul_vel.csv']
 
     for filename in test_datasets_filenames:
-      if filename[0:5] == 'ATLAS':
-        mass = 174.25
-      elif filename[0:3] == 'NAO':
-        mass = 5.19535
 
       unseen = read_dataset(filename)
+
       unseenlabels = unseen[:,-1]
       unseen = np.delete(unseen,-1,axis = 1)
 
+      print("SLIP",np.count_nonzero(unseenlabels == 2))
+      print("STABLE",np.count_nonzero(unseenlabels == 0))
+      print("FLY",np.count_nonzero(unseenlabels == 1))
 
-
-      # unseen, unseenlabels = remove_outliers(unseen,unseenlabels)
-      # USE THIS FOR STELIOS NORMALIZE METHOD
-
-
+      unseen, unseenlabels = remove_outliers(unseen,unseenlabels)
 
       unseenlabels = merge_slip_with_fly(unseenlabels)
 
+      if humanoid:
+          unseen[:,:3]   = add_noise(unseen[:,:3],0.6325)      # Fx Fy Fz
+          unseen[:,3:6]  = add_noise(unseen[:,3:6],0.0316)     # Tx Ty Tz
+          unseen[:,6:9]  = add_noise(unseen[:,6:9],0.0078)     # ax ay az
+          unseen[:,9:12] = add_noise(unseen[:,9:12],0.00523)   # wx wy wz
+      else:
+          unseen = remove_features([0,1,3,4,5],unseen)
+          unseen[:,0:1] = add_noise(unseen[:,0:1],0.6325)       # Fz
+          unseen[:,1:4] = add_noise(unseen[:,1:4],0.0078)       # ax ay az
+          unseen[:,4:7] = add_noise(unseen[:,4:7],0.00523)      # wx wy wz
 
-      unseen[:,:3]   = add_noise(unseen[:,:3],0.6325)
-      unseen[:,3:6]  = add_noise(unseen[:,3:6],0.0316)
-      unseen[:,6:9]  = add_noise(unseen[:,6:9],0.0078)
-      unseen[:,9:12] = add_noise(unseen[:,9:12],0.00523)
 
 
+
+      # Normalize
       for i in range(unseen.shape[1]):
-          unseen[:,i] = normalize(unseen[:,i],np.max(unseen[:,i]))
-      # for i in range(dataset.shape[1]):
-      #     unseen[:,i] = normalize(unseen[:,i],np.max(unseen[:,i]))
-      # Remove FLY data points
-      # unseen, unseenlabels = remove_fly_data(unseen, unseenlabels)
-
-      #unseen = remove_features([0,1,3,4,5],unseen)
-
-      # unseen[:,0:1] = add_noise(unseen[:,0:1],0.6325)      # Fz
-      # unseen[:,1:4] = add_noise(unseen[:,1:4],0.0078)       # ax ay az
-      # unseen[:,4:7] = add_noise(unseen[:,4:7],0.00523)      # wx wy wz
-
+          unseen[:,i] = normalize(unseen[:,i],np.max(abs(unseen[:,i])))
 
       unseen = unseen.reshape(unseen.shape[0],unseen.shape[1],1)
 
@@ -212,16 +183,11 @@ if __name__ == "__main__":
       classes_x1 = np.argmax(predict_x1,axis=1)
       conf1 = confusion_matrix(unseenlabels,classes_x1)
 
-      # for 2 classes
+      # RESULTS
       print(filename)
       print(conf1)
       print("Stable accuracy = ", conf1[0,0]*100/(conf1[0,0]+conf1[0,1]))
       print("Slip  accuracy = ", conf1[1,1]*100/(conf1[1,0]+conf1[1,1]))
 
       # Save predictions
-      # np.savetxt('/home/michael/Desktop/comparison/predictions/' + filename,predict_x1,delimiter =',')
-      # for 3 classes
-      # print(conf1)
-      # print("Stable accuracy = ", conf1[0,0]*100/(conf1[0,0]+conf1[0,1]+conf1[0,2]))
-      # print("Fly accuracy    = ", conf1[1,1]*100/(conf1[1,0]+conf1[1,1]+conf1[1,2]))
-      # print("Slip  accuracy  = ", conf1[2,2]*100/(conf1[2,0]+conf1[2,1]+conf1[2,2]))
+      # np.savetxt(path + filename,predict_x1,delimiter =',')
