@@ -1,14 +1,19 @@
 import numpy as np
 import pandas as pd
 import math
+import random
+
+from time import perf_counter
 from numpy import mean,std
-import matplotlib.pyplot as plt
-from copy import deepcopy
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.utils import to_categorical
 from sklearn.metrics import confusion_matrix
-import random
+
 from lcd import lcd
+
+humanoid = True
+robot = "ATLAS"
+noise = True
 
 
 def read_dataset(filename):
@@ -75,7 +80,7 @@ def remove_outliers(dataset,labels):
 
   labels  = np.delete(labels,outliers,axis=0)
 
-  print( "Removed -> ",  before_del- dataset.shape[0], " data samples out of ", before_del)
+  # print( "Removed -> ",  before_del- dataset.shape[0], " data samples out of ", before_del)
   return dataset,labels
 
 
@@ -85,9 +90,6 @@ def merge_slip_with_fly(ls):
         if ls[i] == 2:
             ls[i] = 1
     return ls
-
-humanoid = True
-robot = "ATLAS"
 
 
 if __name__ == "__main__":
@@ -103,16 +105,18 @@ if __name__ == "__main__":
 
     if humanoid:
         # add gaussian noise
-        dataset[:,:3]  = add_noise(dataset[:,:3],0.6325)       # Fx Fy Fz
-        dataset[:,3:6] = add_noise(dataset[:,3:6],0.03)        # Tx Ty Tz
-        dataset[:,6:9] = add_noise(dataset[:,6:9],0.0078)      # ax ay az
-        dataset[:,9:12] = add_noise(dataset[:,9:12],0.00523)   # wx wy wz
+        if noise == True:
+            dataset[:,:3]  = add_noise(dataset[:,:3],0.6325)       # Fx Fy Fz
+            dataset[:,3:6] = add_noise(dataset[:,3:6],0.03)        # Tx Ty Tz
+            dataset[:,6:9] = add_noise(dataset[:,6:9],0.0078)      # ax ay az
+            dataset[:,9:12] = add_noise(dataset[:,9:12],0.00523)   # wx wy wz
     else:
         # Remove features and add noise in case of point-feet robot
         dataset = remove_features([0,1,3,4,5],dataset)
-        dataset[:,0:1] = add_noise(dataset[:,0:1],0.6325)       # Fz
-        dataset[:,1:4] = add_noise(dataset[:,1:4],0.0078)       # ax ay az
-        dataset[:,4:7] = add_noise(dataset[:,4:7],0.00523)      # wx wy wz
+        if noise == True:
+            dataset[:,0:1] = add_noise(dataset[:,0:1],0.6325)       # Fz
+            dataset[:,1:4] = add_noise(dataset[:,1:4],0.0078)       # ax ay az
+            dataset[:,4:7] = add_noise(dataset[:,4:7],0.00523)      # wx wy wz
 
 
     #  Normalize
@@ -179,7 +183,11 @@ if __name__ == "__main__":
 
       unseen = unseen.reshape(unseen.shape[0],unseen.shape[1],1)
 
+      start_counting = perf_counter()
       predict_x1 = contact.predict_dataset(unseen)
+      stop_counting = perf_counter()
+
+      print("Required prediction time per sample = ", (stop_counting-start_counting)/predict_x1.shape[0])
       classes_x1 = np.argmax(predict_x1,axis=1)
       conf1 = confusion_matrix(unseenlabels,classes_x1)
 
