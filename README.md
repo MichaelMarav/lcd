@@ -2,7 +2,7 @@
 
 LCD is a quality of contact estimation supervised deep learning framework for legged robots. It utilizes Force/Torque and IMU measurements to predict the probability of Stable Contact (**SC**) and Unstable Contact (**UC**). LCD also works with reduced features (Fz + IMU) in case the robot is point feet but the results are slightly worse on datasets with extremely low friction coefficient surfaces (< 0.07). Additionally, LCD makes cross-platform predictions, meaning it can predict the quality of contact on gaits of *robot A* even thought it was trained using data from *robot B*. It can also run real-time with
 
-# Installation
+## Installation
 
 Clone this repository in your workspace. The default robot type for training and testing is *Humanoid*, meaning you'll need to provide a dataset with 12 features and 1 label per sample (0 or 1). The dataset will need to have the following structure:
 
@@ -26,4 +26,4 @@ The prediction time per sample is 1e-5, thus it can make prediction real-time, b
 
 ## Provided Datasets
 
-The datasets (.csv) that are given are self explanatory. Name of robot + number of samples + friction coeff. In the "mixed friction" datasets, the fiction coefficient varies from 0.03 to 1.2. The labels are either 0 (stable contact), 1 (no_contact) and 2 (slip). Labels 1 and 2 are merged into one class by lcd namely UC. These samples were collected from the raisim simulated environment and the labels were extracted by using the force and also by utilizing the ground-truth linear and angular velocity of the foot.
+The datasets (.csv) that are given are self explanatory. Name of robot + number of samples + friction coeff. In the "mixed friction" datasets, the fiction coefficient varies from 0.03 to 1.2. The labels are either 0 (stable contact), 1 (no_contact) and 2 (slip). Labels 1 and 2 are merged into one class by lcd namely UC. These samples were collected from the raisim simulated environment and the labels were extracted by using the force and also by utilizing the ground-truth linear and angular velocity of the foot. Each dataset consists of omnidirectional walking gaits of the named robot with a sampling rate of 100 hz
