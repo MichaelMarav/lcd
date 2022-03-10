@@ -36,4 +36,4 @@ Walking in extremely low coefficient surface scenarios causes the robot to slip 
 
 The prediction of LCD on an experiment with an ATLAS robot walking on a surface with friction coefficient below 0.1 are represented in the following figure:
 
-![Screenshot](images/lcdpred.png)
+![Screenshot](src/images/lcdpred.png)
