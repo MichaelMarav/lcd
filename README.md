@@ -34,6 +34,11 @@ The datasets (.csv) that are given are self explanatory. Name of robot + number 
 
 Walking in extremely low coefficient surface scenarios causes the robot to slip but since it transfers its weight to the slipping foot, the vertical ground reaction force is high-valued and thus mainstream algorithms for predicting the contact state fail.
 
-The prediction of LCD on an experiment with an ATLAS robot walking on a surface with friction coefficient below 0.1 are represented in the following figure:
+The prediction of LCD on an experiment with an ATLAS robot walking on a surface with friction coefficient below 0.1 are represented in the following figure. The top labels mean stable contact and the bottom mean unstable contact (Slip + fly):
 
 ![Screenshot](src/images/lcdpred.png)
+
+
+The first two steps are on normal friction coefficient and thus the labels behave as expected. Meanwhile the third and forth steps are when the robot slips even though the GRF values are the same as before.
+
+![Screenshot](src/images/lcdexplained.png)
