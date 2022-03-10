@@ -14,7 +14,7 @@ from lcd import lcd
 humanoid = True
 robot = "ATLAS"
 noise = True
-
+prefix = 'data/'
 
 def read_dataset(filename):
   df = pd.read_csv(filename,engine = 'python')
@@ -93,7 +93,7 @@ def merge_slip_with_fly(ls):
 
 
 if __name__ == "__main__":
-    dataset = read_dataset('ATLAS_21k_02ground.csv')
+    dataset = read_dataset(prefix + 'ATLAS_21k_02ground.csv')
     labels  = dataset[:,-1]         # delete labels
     dataset = np.delete(dataset,-1,axis = 1)
 
@@ -150,7 +150,7 @@ if __name__ == "__main__":
 
     for filename in test_datasets_filenames:
 
-      unseen = read_dataset(filename)
+      unseen = read_dataset(prefix + filename)
 
       unseenlabels = unseen[:,-1]
       unseen = np.delete(unseen,-1,axis = 1)

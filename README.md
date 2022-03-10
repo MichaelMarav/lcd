@@ -21,9 +21,19 @@ You can also toggle on/off the gaussian noise by changing **noise = True/False**
 python3 train.py
 ```
 
-The prediction time per sample is 1e-5, thus it can make prediction real-time, but this is not yet implemented and it is work in progress.
+The prediction time per sample is 1e-5, thus it can make prediction real-time, but this is not yet implemented and it is a work in progress.
 
 
 ## Provided Datasets
 
 The datasets (.csv) that are given are self explanatory. Name of robot + number of samples + friction coeff. In the "mixed friction" datasets, the fiction coefficient varies from 0.03 to 1.2. The labels are either 0 (stable contact), 1 (no_contact) and 2 (slip). Labels 1 and 2 are merged into one class by lcd namely UC. These samples were collected from the raisim simulated environment and the labels were extracted by using the force and also by utilizing the ground-truth linear and angular velocity of the foot. Each dataset consists of omnidirectional walking gaits of the named robot with a sampling rate of 100 hz
+
+
+
+## Results
+
+Walking in extremely low coefficient surface scenarios causes the robot to slip but since it transfers its weight to the slipping foot, the vertical ground reaction force is high-valued and thus mainstream algorithms for predicting the contact state fail.
+
+The prediction of LCD on an experiment with an ATLAS robot walking on a surface with friction coefficient below 0.1 are represented in the following figure:
+
+![Screenshot](images/lcdpred.png)
