@@ -11,10 +11,12 @@ from sklearn.metrics import confusion_matrix
 
 from lcd import lcd
 
+# Parameters
 humanoid = True
 robot = "ATLAS"
 noise = True
 prefix = 'data/'
+
 
 def read_dataset(filename):
   df = pd.read_csv(filename,engine = 'python')
