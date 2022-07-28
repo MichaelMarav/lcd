@@ -8,13 +8,13 @@ from numpy import mean,std
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.utils import to_categorical
 from sklearn.metrics import confusion_matrix
-
+from sklearn.metrics import precision_recall_curve
 from lcd import lcd
-
+import matplotlib.pyplot as plt
 # Parameters
 humanoid = True
 robot = "ATLAS"
-noise = True
+noise = True    # Add more noise
 prefix = 'data/'
 
 
@@ -94,8 +94,11 @@ def merge_slip_with_fly(ls):
     return ls
 
 
+
+
 if __name__ == "__main__":
     dataset = read_dataset(prefix + 'ATLAS_21k_02ground.csv')
+
     labels  = dataset[:,-1]         # delete labels
     dataset = np.delete(dataset,-1,axis = 1)
 
@@ -129,8 +132,8 @@ if __name__ == "__main__":
 
     X_train, X_test, y_train, y_test = train_test_split(dataset, labels, test_size=0.2, random_state=43)
     y_train = to_categorical(y_train,num_classes=2)
-    X_train = X_train.reshape(X_train.shape[0],X_train.shape[1],1)
-    X_test  = X_test.reshape(X_test.shape[0],X_test.shape[1],1)
+    X_train = X_train.reshape(X_train.shape[0],X_train.shape[1])
+    X_test  = X_test.reshape(X_test.shape[0],X_test.shape[1])
 
     contact = lcd()
 
@@ -142,6 +145,7 @@ if __name__ == "__main__":
     predict_x = contact.predict_dataset(X_test) # 20% of the training dataset
     classes_x = np.argmax(predict_x,axis=1)
     conf = confusion_matrix(y_test,classes_x)
+
 
     print(conf)
     print("Stable accuracy = ", conf[0,0]*100/(conf[0,0]+conf[0,1]))
@@ -166,12 +170,14 @@ if __name__ == "__main__":
       unseenlabels = merge_slip_with_fly(unseenlabels)
 
       if humanoid:
+        if noise:
           unseen[:,:3]   = add_noise(unseen[:,:3],0.6325)      # Fx Fy Fz
           unseen[:,3:6]  = add_noise(unseen[:,3:6],0.0316)     # Tx Ty Tz
           unseen[:,6:9]  = add_noise(unseen[:,6:9],0.0078)     # ax ay az
           unseen[:,9:12] = add_noise(unseen[:,9:12],0.00523)   # wx wy wz
       else:
-          unseen = remove_features([0,1,3,4,5],unseen)
+        unseen = remove_features([0,1,3,4,5],unseen)
+        if noise:
           unseen[:,0:1] = add_noise(unseen[:,0:1],0.6325)       # Fz
           unseen[:,1:4] = add_noise(unseen[:,1:4],0.0078)       # ax ay az
           unseen[:,4:7] = add_noise(unseen[:,4:7],0.00523)      # wx wy wz
@@ -183,13 +189,14 @@ if __name__ == "__main__":
       for i in range(unseen.shape[1]):
           unseen[:,i] = normalize(unseen[:,i],np.max(abs(unseen[:,i])))
 
-      unseen = unseen.reshape(unseen.shape[0],unseen.shape[1],1)
+      unseen = unseen.reshape(unseen.shape[0],unseen.shape[1])
 
       start_counting = perf_counter()
       predict_x1 = contact.predict_dataset(unseen)
       stop_counting = perf_counter()
 
       print("Required prediction time per sample = ", (stop_counting-start_counting)/predict_x1.shape[0])
+
       classes_x1 = np.argmax(predict_x1,axis=1)
       conf1 = confusion_matrix(unseenlabels,classes_x1)
 

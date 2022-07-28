@@ -63,8 +63,7 @@ class lcd():
             #self.gmm = mixture.GaussianMixture(n_components=3, covariance_type='full', max_iter=200, tol=5.0e-4, init_params = 'kmeans',warm_start=False, n_init=50, verbose=1)
           
 
-    def fit(self,data_train,  data_labels,  epochs_, batch_size_, save_model_ = False):
-        print("Data Size ",data_train.size)
+    def fit(self,data_train,  data_labels,  epochs_, batch_size_, save_model_ = False):        
         self.mlp.fit(data_train,data_labels, epochs_, batch_size_)
         self.leg_probabilities =  self.mlp.model.predict(data_train)
         self.model_log = self.mlp.model_log.history

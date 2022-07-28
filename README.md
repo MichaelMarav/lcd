@@ -2,7 +2,7 @@
 
 LCD is a quality of contact estimation supervised deep learning framework for legged robots. It utilizes Force/Torque and IMU measurements to predict the probability of Stable Contact (**SC**) and Unstable Contact (**UC**). LCD also works with reduced features (Fz + IMU) in case the robot is point feet but the results are slightly worse on datasets with extremely low friction coefficient surfaces (< 0.07). Additionally, LCD makes cross-platform predictions, meaning it can predict the quality of contact on gaits of *robot A* even thought it was trained using data from *robot B*. It can also run real-time with
 
-## Installation
+## Installation of LCD
 
 Clone this repository in your workspace. The default robot type for training and testing is *Humanoid*, meaning you'll need to provide a dataset with 12 features and 1 label per sample (0 or 1). The dataset will need to have the following structure:
 
@@ -23,6 +23,17 @@ python3 train.py
 
 The prediction time per sample is 1e-5, thus it can make prediction real-time, but this is not yet implemented and it is a work in progress.
 
+## Setup raisim simulator
+In case you want to setup the raisim simulator with either ATLAS or NAO. 
+
+![Screenshot](src/images/atlas.png)
+
+You will need to install the following packages:
+
+1. https://github.com/mrsp/raisim_ros
+2. https://github.com/mrsp/lipm_control
+3. https://github.com/mrsp/lipm_motion
+4. https://github.com/mrsp/whole_body_ik
 
 ## Provided Datasets
 
@@ -36,9 +47,8 @@ Walking in extremely low coefficient surface scenarios causes the robot to slip 
 
 The prediction of LCD on an experiment with an ATLAS robot walking on a surface with friction coefficient below 0.1 are represented in the following figure. The top labels mean stable contact and the bottom mean unstable contact (Slip + fly):
 
-![Screenshot](src/images/lcdpred.png)
+![Screenshot](src/images/lcdexplained.png)
 
 
 The first two steps are on normal friction coefficient and thus the labels behave as expected. Meanwhile the third and forth steps are when the robot slips even though the GRF values are the same as before.
 
-![Screenshot](src/images/lcdexplained.png)
